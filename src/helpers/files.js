@@ -45,7 +45,12 @@ const checkDirPath = (inputPath) => {
 }
 
 const prepareInputPath = (inputPath) => {
-    if(!inputPath.startsWith('/') && inputPath.indexOf(':\\') === -1) {
+    if(inputPath === '.') {
+        return process.cwd();
+    }
+
+    if((!inputPath.startsWith('/') && inputPath.indexOf(':\\') === -1) ||
+        inputPath.startsWith('./')) {
         inputPath = path.join(process.cwd(), inputPath);
     }
 

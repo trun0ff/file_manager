@@ -1,6 +1,7 @@
 import zlib from "zlib";
 import fs from "fs";
 import path from "path";
+import {sayCurrFolder} from "./say.js";
 
 const extension = '.br';
 
@@ -13,6 +14,9 @@ const compressBrotli = async (filePath, pathTo) => {
 
     stream.on('finish', () => {
         console.log('Compression is done.');
+    });
+    stream.on('end', () => {
+        sayCurrFolder();
     });
 };
 
@@ -27,6 +31,10 @@ const decompressBrotli = async (fileFrom, pathTo) => {
 
     stream.on('finish', () => {
         console.log('Decompressing is done.');
+    });
+
+    stream.on('end', () => {
+        sayCurrFolder();
     });
 };
 

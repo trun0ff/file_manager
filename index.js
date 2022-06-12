@@ -17,13 +17,18 @@ rl.on('line', (line) => {
     const inputLine = line.trim();
     const actionEnd = line.indexOf(' ') !== -1 ? line.indexOf(' ') : 0;
     const action = actionEnd ? inputLine.slice(0, actionEnd) : inputLine;
+    const actionsSayingFolderInside = ['ls', 'compress', 'decompress', 'cat', 'add', 'rn', 'cp', 'mv'];
 
     const params = inputLine.indexOf(' ') === -1 ? [] : inputLine
         .slice(inputLine.indexOf(' '), inputLine.length)
         .trim()
         .split(' ');
 
-    __resolveAction(action, params).then(() => {sayCurrFolder()})
+    __resolveAction(action, params).then(() => {
+        if(!actionsSayingFolderInside.includes(action)) {
+            sayCurrFolder();
+        }
+    })
 });
 
 rl.on('close', () => sayBye(username));

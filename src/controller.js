@@ -1,11 +1,19 @@
 import InvalidActionError from "./Errors/InvalidActionError.js";
 import path from "path";
-import {calculateHash, checkDirPath, checkFilePath, list, prepareInputPath, readFile} from "./helpers/files.js";
+import {
+    calculateHash,
+    checkDirPath,
+    checkFilePath, copyFileByStream, createFile, fileRemove, fileRename,
+    listContents, moveFileByStream,
+    prepareInputPath,
+    readFileByStream
+} from "./helpers/files.js";
 import {getFirstKey, getFirstPathArg, getSecondPathArg} from "./helpers/args.js";
 import InvalidArgumentError from "./Errors/InvalidArgumentError.js";
-import {cpus, EOL, homedir, userInfo} from "os";
+import {EOL, homedir, userInfo} from "os";
 import {printCpusInfo} from "./helpers/os_info.js";
 import {compressBrotli, decompressBrotli} from "./helpers/compression.js";
+import {sayCurrFolder} from "./helpers/say.js";
 
 export const __resolveAction = async (action, params) => {
     switch (action) {
@@ -22,14 +30,19 @@ export const __resolveAction = async (action, params) => {
             actionCat(params);
             break;
         case 'add':
+            actionAdd(params);
             break;
         case 'rn':
+            actionRename(params);
             break;
         case 'cp':
+            actionCp(params);
             break;
         case 'mv':
+            actionMv(params);
             break;
         case 'rm':
+            actionRemove(params);
             break;
         case 'os':
             actionOs(params);
@@ -65,12 +78,72 @@ const actionCd = (params) => {
 };
 
 const actionLs = () => {
-    list(process.cwd())
+    listContents(process.cwd());
 };
 
-const actionCat = () => {
-    // resolve path like for actionCd and then call readFile from files.js
+const actionCat = (params) => {
+    let filePath = prepareInputPath(getFirstPathArg(params));
+    if(!checkFilePath(getFirstPathArg(params))) {
+        console.log('File is not exist in ' + filePath);
+        return;
+    }
+    console.log('======= Contents of ' + filePath + ' =======');
+    readFileByStream(filePath);
 };
+
+const actionAdd = (params) => {
+    let filePath = prepareInputPath(getFirstPathArg(params));
+    createFile(filePath);
+};
+
+const actionRename = (params) => {
+    let filePath = prepareInputPath(getFirstPathArg(params));
+    if(!checkFilePath(getFirstPathArg(params))) {
+        console.log('File is not exist in ' + filePath);
+        return;
+    }
+
+    fileRename(filePath, getSecondPathArg(params)).then(() => {
+        sayCurrFolder();
+    });
+};
+
+const actionCp = (params) => {
+    if(!checkFilePath(getFirstPathArg(params)) || !checkDirPath(getSecondPathArg(params))) {
+        console.log('Check arguments, fist should be existing file and second is folder.');
+        return;
+    }
+
+    copyFileByStream(
+        prepareInputPath(getFirstPathArg(params)),
+        prepareInputPath(getSecondPathArg(params))
+    );
+};
+
+const actionMv = (params) => {
+    let filePath = prepareInputPath(getFirstPathArg(params));
+    if(!checkFilePath(getFirstPathArg(params)) || !checkDirPath(getSecondPathArg(params))) {
+        console.log('Check arguments, fist should be existing file and second is folder.');
+        return;
+    }
+
+    moveFileByStream(
+        filePath,
+        prepareInputPath(getSecondPathArg(params))
+    );
+};
+
+const actionRemove = (params) => {
+    let filePath = prepareInputPath(getFirstPathArg(params));
+    if(!checkFilePath(getFirstPathArg(params))) {
+        console.log('Check file path.');
+        return;
+    }
+
+    fileRemove(filePath);
+};
+
+
 
 const actionOs = (params) => {
     let key = getFirstKey(params);

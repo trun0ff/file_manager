@@ -2,14 +2,16 @@ import fs from "fs";
 import crypto from "crypto";
 import path from 'path';
 import {sayCurrFolder} from "./say.js";
+import InvalidArgumentError from "../Errors/InvalidArgumentError.js";
+import InvalidActionError from "../Errors/InvalidActionError.js";
 
 const listContents = async (listFolder) => {
     fs.access(listFolder, (err ) => {
-        if(err) throw new Error('FS operation failed. Folder to list files from doesn\'t exist');
+        if(err) throw new InvalidArgumentError('Operation failed');
     });
 
     fs.readdir(listFolder, (err, files) => {
-        if(err) throw new Error(err);
+        if(err) throw new InvalidArgumentError('Operation failed: ' + err.message);
         files.forEach((file) => {
             console.log(file);
         });
@@ -21,7 +23,7 @@ const readFile = (filePath) => {
     const readableStream = fs.createReadStream(filePath, 'utf-8');
 
     readableStream.on('error', function (error) {
-        console.log(`error: ${error.message}`);
+        throw new Error(`Operation failed: ${error.message}`);
     })
 
     readableStream.on('data', (chunk) => {
@@ -59,7 +61,7 @@ const readFileByStream = (filePath) => {
     const fileReadStream = fs.createReadStream(filePath, 'utf8');
 
     fileReadStream.on('error', function (error) {
-        console.log(`error: ${error.message}`);
+        throw new Error(`Operation failed: ${error.message}`);
     });
 
     fileReadStream.on('data', (chunk) => {
@@ -97,7 +99,7 @@ const moveFileByStream = (filePathFrom, destinationFolderPath) => {
     readableStream.on('end', () => {
         fs.unlink(filePathFrom, (err) => {
             if (err) {
-                console.log("Removing initial file failed. " + err.message);
+                throw new Error(`Operation failed: ${error.message}`);
             }
             sayCurrFolder();
         });
@@ -113,7 +115,7 @@ const createFile = async (filePath) => {
                 sayCurrFolder();
             });
         } else {
-            console.log("File cannot be created.");
+            throw new Error(`Operation failed: ${error.message}`);
         }
     });
 };
@@ -124,7 +126,7 @@ const fileRename = async (filePath, newFileName) => {
         path.join(path.dirname(filePath), newFileName),
         (err) => {
             if (err) {
-                console.log("Rename failed: " + err.message);
+                throw new Error('Operation failed: ' + err.message);
             }
         }
     );
@@ -133,7 +135,7 @@ const fileRename = async (filePath, newFileName) => {
 const fileRemove = (filePath) => {
     fs.unlink(filePath, (err) => {
         if (err) {
-            console.log("Removing initial file failed. " + err.message);
+            throw new Error('Operation failed: Removing initial file failed. ' + err.message);
         }
     });
 };

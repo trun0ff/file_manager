@@ -18,7 +18,7 @@ const getArgValue = (argKey) => {
 
 const getFirstKey = (params) => {
     if(!params.length) {
-        throw new InvalidArgumentError('Path is not set');
+        throw new InvalidArgumentError('Invalid input');
     }
 
     const args = params;
@@ -38,10 +38,9 @@ const getFirstKey = (params) => {
 
 const getFirstPathArg = (params) => {
     if(!params.length) {
-        throw new InvalidArgumentError('First path is not set');
+        throw new InvalidArgumentError('Invalid input');
     }
-
-    return params[0].trim();
+    return `${params[0].trim()}`;
 };
 
 const getSecondPathArg = (params) => {

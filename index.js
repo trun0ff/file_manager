@@ -4,13 +4,17 @@ import {__resolveAction} from "./src/controller.js";
 import {sayHi, sayBye, sayCurrFolder} from "./src/helpers/say.js";
 import {homedir} from "os";
 
-const username = getArgValue('username');
+const usernameRaw = getArgValue('username');
+const username = !usernameRaw.length ? 'Guest' : usernameRaw.charAt(0).toUpperCase() + usernameRaw.slice(1);
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
 });
 
 process.chdir(homedir());
+process.on('uncaughtException', (err) => {
+    console.log(err.message);
+});
 sayHi(username);
 
 rl.on('line', (line) => {
@@ -19,10 +23,9 @@ rl.on('line', (line) => {
     const action = actionEnd ? inputLine.slice(0, actionEnd) : inputLine;
     const actionsSayingFolderInside = ['ls', 'compress', 'decompress', 'cat', 'add', 'rn', 'cp', 'mv'];
 
-    const params = inputLine.indexOf(' ') === -1 ? [] : inputLine
+    const params = inputLine.indexOf(' ') === -1 ? [] : `${inputLine}`
         .slice(inputLine.indexOf(' '), inputLine.length)
-        .trim()
-        .split(' ');
+        .trim().match(/(?:[^\s"]+|"[^"]*")+/g);
 
     __resolveAction(action, params).then(() => {
         if(!actionsSayingFolderInside.includes(action)) {

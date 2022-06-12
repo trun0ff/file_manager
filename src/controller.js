@@ -57,7 +57,7 @@ export const __resolveAction = async (action, params) => {
             await actionDecompress(params);
             break;
         default:
-            throw new InvalidActionError('Oops! Action not found.');
+            throw new InvalidActionError('Invalid input');
     }
 };
 
@@ -69,7 +69,8 @@ const actionCd = (params) => {
     if(params.length !== 1) {
         throw new InvalidArgumentError('Wrong arguments for cd');
     }
-    var dir = params[0];
+    var dir = prepareInputPath(getFirstPathArg(params));
+
     if(!dir.startsWith('/') && dir.indexOf(':') === -1)
     {
         dir = process.cwd() + path.sep + dir;
@@ -84,8 +85,7 @@ const actionLs = () => {
 const actionCat = (params) => {
     let filePath = prepareInputPath(getFirstPathArg(params));
     if(!checkFilePath(getFirstPathArg(params))) {
-        console.log('File is not exist in ' + filePath);
-        return;
+        throw new InvalidArgumentError('Invalid input. File is not exist in ' + filePath);
     }
     console.log('======= Contents of ' + filePath + ' =======');
     readFileByStream(filePath);
@@ -99,8 +99,7 @@ const actionAdd = (params) => {
 const actionRename = (params) => {
     let filePath = prepareInputPath(getFirstPathArg(params));
     if(!checkFilePath(getFirstPathArg(params))) {
-        console.log('File is not exist in ' + filePath);
-        return;
+        throw new InvalidArgumentError('Invalid input. File is not exist in ' + filePath);
     }
 
     fileRename(filePath, getSecondPathArg(params)).then(() => {
@@ -110,8 +109,7 @@ const actionRename = (params) => {
 
 const actionCp = (params) => {
     if(!checkFilePath(getFirstPathArg(params)) || !checkDirPath(getSecondPathArg(params))) {
-        console.log('Check arguments, fist should be existing file and second is folder.');
-        return;
+        throw new InvalidArgumentError('Invalid input. first should be existing file and second is folder.');
     }
 
     copyFileByStream(
@@ -123,8 +121,7 @@ const actionCp = (params) => {
 const actionMv = (params) => {
     let filePath = prepareInputPath(getFirstPathArg(params));
     if(!checkFilePath(getFirstPathArg(params)) || !checkDirPath(getSecondPathArg(params))) {
-        console.log('Check arguments, fist should be existing file and second is folder.');
-        return;
+        throw new InvalidArgumentError('Invalid input. first should be existing file and second is folder.');
     }
 
     moveFileByStream(
@@ -136,8 +133,7 @@ const actionMv = (params) => {
 const actionRemove = (params) => {
     let filePath = prepareInputPath(getFirstPathArg(params));
     if(!checkFilePath(getFirstPathArg(params))) {
-        console.log('Check file path.');
-        return;
+        throw new InvalidArgumentError('Invalid input. Check file path.');
     }
 
     fileRemove(filePath);
@@ -169,9 +165,10 @@ const actionOs = (params) => {
 };
 
 const actionHash = (params) => {
-    console.log( checkFilePath(getFirstPathArg(params)) ?
-        'File hash is: ' + calculateHash(getFirstPathArg(params)) :
-        'Path is incorrect!');
+    if(!checkFilePath(getFirstPathArg(params))) {
+        throw new InvalidArgumentError('Invalid input.');
+    }
+    console.log('File hash is: ' + calculateHash(getFirstPathArg(params)));
 };
 
 const actionCompress = async (params) => {
@@ -185,8 +182,7 @@ const actionCompress = async (params) => {
 
 const actionDecompress = async (params) => {
     if(!checkFilePath(getFirstPathArg(params)) || !checkDirPath(getSecondPathArg(params))) {
-        console.log('Check that first argument is file and second is directory that exists');
-        return;
+        throw new Error('Invalid input. Check that first argument is file and second is directory that exists');
     }
 
     await decompressBrotli(prepareInputPath(getFirstPathArg(params)), prepareInputPath(getSecondPathArg(params)));

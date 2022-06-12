@@ -3,7 +3,6 @@ import crypto from "crypto";
 import path from 'path';
 import {sayCurrFolder} from "./say.js";
 import InvalidArgumentError from "../Errors/InvalidArgumentError.js";
-import InvalidActionError from "../Errors/InvalidActionError.js";
 
 const listContents = async (listFolder) => {
     fs.access(listFolder, (err ) => {
@@ -12,9 +11,13 @@ const listContents = async (listFolder) => {
 
     fs.readdir(listFolder, (err, files) => {
         if(err) throw new InvalidArgumentError('Operation failed: ' + err.message);
-        files.forEach((file) => {
-            console.log(file);
-        });
+        if(files.length === 0) {
+            console.log('Directory is empty');
+        } else {
+            files.forEach((file) => {
+                console.log(file);
+            });
+        }
         sayCurrFolder();
     });
 };
@@ -46,7 +49,7 @@ const prepareInputPath = (inputPath) => {
         inputPath = path.join(process.cwd(), inputPath);
     }
 
-    return inputPath;
+    return inputPath.replace(/['"]+/g, '');
 }
 
 const calculateHash = (inputPath) => {

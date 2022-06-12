@@ -14,14 +14,11 @@ const compressBrotli = async (filePath, pathTo) => {
 
     stream.on('finish', () => {
         console.log('Compression is done.');
-    });
-    stream.on('end', () => {
         sayCurrFolder();
     });
 };
 
 const decompressBrotli = async (fileFrom, pathTo) => {
-    //check that from is file and has br extension
     pathTo = path.join(pathTo, path.basename(fileFrom));
     pathTo = pathTo.slice(0,-extension.length);
     const readStream = fs.createReadStream(fileFrom);
@@ -31,9 +28,6 @@ const decompressBrotli = async (fileFrom, pathTo) => {
 
     stream.on('finish', () => {
         console.log('Decompressing is done.');
-    });
-
-    stream.on('end', () => {
         sayCurrFolder();
     });
 };
